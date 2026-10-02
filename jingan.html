@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>梧桐细雨 · 摩登静安 | 海派洋房与光影橱窗雨日指南</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-ink: #0c1219;
+      --bg-surface: rgba(18, 27, 38, 0.75);
+      --bg-card: rgba(23, 35, 48, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(226, 180, 108, 0.35);
+      --artdeco-gold: #e2b46c;     /* 静安寺与Art Deco金辉 */
+      --gold-glow: rgba(226, 180, 108, 0.18);
+      --shikumen-wine: #b35c6e;    /* 张园红砖与法式小酒馆红酒色 */
+      --sycamore-green: #739082;   /* 雨打梧桐叶与苏河湾清韵 */
+      --rain-sky: #70a1c4;
+      --text-main: #f3f6fa;
+      --text-muted: #9eb2c5;
+      --text-dim: #63778a;
+      --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", STSong, serif;
+      --font-display: "Cinzel", var(--font-serif);
+      --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-ink);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Canvas for falling rain drops */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.65;
+    }
+
+    /* Ambient atmospheric glow */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-gold {
+      top: -80px;
+      right: 15%;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(226, 180, 108, 0.14) 0%, transparent 70%);
+    }
+    .glow-wine {
+      bottom: 10%;
+      left: 10%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(179, 92, 110, 0.12) 0%, transparent 70%);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Multi-route switcher navigation */
+    .nav-routes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 0 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .routes-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .route-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.2s;
+    }
+    .route-link:hover {
+      color: #fff;
+      border-color: var(--border-accent);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .route-link.current {
+      color: var(--artdeco-gold);
+      border-color: var(--artdeco-gold);
+      background: rgba(226, 180, 108, 0.15);
+      font-weight: 600;
+    }
+
+    /* Header */
+    header {
+      padding: 44px 0 36px;
+      text-align: center;
+    }
+
+    .badge-weather {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--artdeco-gold);
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      backdrop-filter: blur(10px);
+    }
+    .badge-weather .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--artdeco-gold);
+      box-shadow: 0 0 8px var(--artdeco-gold);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    h1.hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(34px, 5.5vw, 54px);
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: #fff;
+      margin-bottom: 14px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-sub {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .hero-quote {
+      font-family: var(--font-serif);
+      font-size: 15.5px;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 30px;
+      line-height: 1.9;
+    }
+
+    /* Audio Controller */
+    .controls-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ambient {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-accent);
+      border-radius: 30px;
+      color: var(--artdeco-gold);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .btn-ambient:hover {
+      background: rgba(226, 180, 108, 0.16);
+      transform: translateY(-1px);
+    }
+    .btn-ambient.playing {
+      background: rgba(226, 180, 108, 0.26);
+      box-shadow: 0 0 20px rgba(226, 180, 108, 0.35);
+    }
+
+    /* Section Titles */
+    .section-title-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin: 48px 0 26px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 18px;
+      background: var(--artdeco-gold);
+      border-radius: 2px;
+    }
+
+    .section-en {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 36px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 20px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--artdeco-gold), rgba(179, 92, 110, 0.4), transparent);
+    }
+
+    .timeline-node {
+      position: relative;
+      margin-bottom: 34px;
+    }
+    .node-pin {
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--bg-ink);
+      border: 2px solid var(--artdeco-gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+    .node-time {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--artdeco-gold);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .node-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .node-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .node-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(226, 180, 108, 0.12);
+      color: var(--artdeco-gold);
+      border: 1px solid rgba(226, 180, 108, 0.25);
+    }
+
+    .node-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .highlight-box {
+      background: rgba(0, 0, 0, 0.28);
+      border-left: 2px solid var(--artdeco-gold);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #d1dde8;
+      margin-top: 10px;
+    }
+    .highlight-box strong {
+      color: var(--artdeco-gold);
+      font-weight: 600;
+    }
+
+    /* Spot Selector Tabs */
+    .tab-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 28px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: 40px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: thin;
+    }
+    .tab-pills::-webkit-scrollbar {
+      height: 4px;
+    }
+    .tab-pills::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    .tab-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .tab-pill:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-pill.active {
+      color: #fff;
+      background: rgba(226, 180, 108, 0.18);
+      border-color: var(--artdeco-gold);
+      font-weight: 600;
+    }
+
+    .spot-content-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .spot-hero-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .spot-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .spot-name {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .spot-vibe {
+      font-size: 13px;
+      color: var(--shikumen-wine);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .spot-grid-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .info-card {
+      background: rgba(12, 18, 25, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .info-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--artdeco-gold);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-card-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Tips Grid */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.25s;
+    }
+    .tip-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-3px);
+    }
+
+    .tip-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .tip-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .tip-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Checklist */
+    .checklist-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .check-custom {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .checklist-item.checked .check-custom {
+      background: var(--artdeco-gold);
+      border-color: var(--artdeco-gold);
+    }
+    .checklist-item.checked .check-custom::after {
+      content: "✓";
+      color: #0c1219;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .checklist-item.checked .check-label {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    .check-label {
+      font-size: 14.5px;
+      color: #d8e2ec;
+      transition: color 0.2s;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .footer-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--artdeco-gold);
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 16px 60px;
+      }
+      header {
+        padding: 30px 0 20px;
+      }
+      .tab-container {
+        padding: 20px 16px;
+      }
+      .timeline {
+        padding-left: 20px;
+      }
+      .node-pin {
+        left: -20px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+
+  <!-- Ambient light blobs -->
+  <div class="ambient-glow glow-gold"></div>
+  <div class="ambient-glow glow-wine"></div>
+
+  <!-- Rain Canvas for animated rainfall -->
+  <canvas id="rain-canvas"></canvas>
+
+  <div class="container">
+    <!-- Top Route Navigation Switcher -->
+    <div class="nav-routes">
+      <span style="font-size: 12.5px; color: var(--text-dim); letter-spacing: 1px;">上海雨天约会漫游矩阵</span>
+      <div class="routes-pills">
+        <a href="index.html" class="route-link">🏛️ 市区艺术线 (外滩/浦东)</a>
+        <a href="jingan.html" class="route-link current">☕ 静安梧桐线 (洋房/张园)</a>
+        <a href="xuhui.html" class="route-link">🎻 徐汇艺韵线 (书院/黑石/西岸)</a>
+        <a href="jiading.html" class="route-link">🎋 嘉定烟雨线 (保利剧院/远香湖)</a>
+        <a href="songjiang.html" class="route-link">🏰 松江云间线 (广富林/泰晤士)</a>
+      </div>
+    </div>
+
+    <header>
+      <div class="badge-weather">
+        <span class="pulse-dot"></span>
+        <span>SHANGHAI JING'AN · 梧桐掩映 · 细雨霏霏 21°C</span>
+      </div>
+      <h1 class="hero-title">梧桐细雨 · 摩登静安</h1>
+      <p class="hero-sub">HERITAGE MANSIONS & MODERN URBAN ROMANCE</p>
+      <p class="hero-quote">
+        “在静安，细雨洗亮了法桐青翠，也让百年的雕花洋房与玻璃橱窗泛起迷人的柔光。<br>
+        穿梭在陕西北路的老宅与地下温暖连廊之间，无需撑伞，便是一场流动的海派电影。”
+      </p>
+
+      <div class="controls-bar">
+        <button id="toggle-audio-btn" class="btn-ambient">
+          <span id="audio-icon">🌧️</span>
+          <span id="audio-label">开启街角暖咖雨声</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Part 1: Timeline -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">静安一日心动时光线</h2>
+      <span class="section-en">CURATED SCHEDULE</span>
+    </div>
+
+    <div class="timeline">
+      <!-- Node 1 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">10:30 - 12:30 ｜ MORNING</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">洋房醒神 · 陕西北路暖光 Brunch 与热滴滤</h3>
+            <span class="badge-tag">陕西北路 / 巨富长</span>
+          </div>
+          <p class="node-desc">
+            睡到自然醒，来到充满老上海洋房气韵的街角。推门而入，是面包烘焙的麦香与手冲咖啡的醇厚。窗外雨水滑过绿植与玻璃，桌上是香气四溢的牛油果烤酸包与热拿铁。
+          </p>
+          <div class="highlight-box">
+            <strong>推荐打卡：</strong>O/MILLS (静安)、RAC BAR、Alimentari Grande，或直接入驻<strong>静安嘉里中心</strong>地下连廊轻食（地铁2/7/14号线直通，完全无湿鞋顾虑）。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 2 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">13:30 - 16:00 ｜ AFTERNOON</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">时空对白 · PRADA 荣宅民国光影 or UCCA Edge 先锋艺术</h3>
+            <span class="badge-tag">恒温干爽 · 顶级美育</span>
+          </div>
+          <p class="node-desc">
+            午后躲进有顶棚或老宅深处。若喜复古，便去<strong>PRADA 荣宅</strong>看百年前彩色琉璃天窗漏下的幽微雨光；若好当代，去<strong>UCCA Edge</strong>俯瞰雨幕中的苏州河天际线，二人慢慢看展，私语轻吟。
+          </p>
+          <div class="highlight-box">
+            <strong>出片亮点：</strong>荣宅的复古雕花木楼梯拐角，或 UCCA Edge 展厅灰白高挑极简线条，照片极具《花样年华》或纽约当代画报质感。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 3 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">16:30 - 18:00 ｜ TWILIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">海派漫游 · 张园石库门撑伞漫步 & 书香秘境</h3>
+            <span class="badge-tag">石库门雨景 · 蓝瓶咖啡</span>
+          </div>
+          <p class="node-desc">
+            傍晚雨意渐柔，踱步至张园。红砖清水灰缝在雨后泛出油画般的色泽，茂名北路沿街橱窗亮起暖黄华灯。或躲入<strong>朵云书院·戏剧店</strong>，在回形楼梯下挑一本戏剧集，相伴阅读半小时。
+          </p>
+          <div class="highlight-box">
+            <strong>避雨妙处：</strong>张园与兴业太古汇有地下通道相连，可随时转入太古汇室内避雨购物。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 4 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">18:30 - 21:00 ｜ NIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">暖烛微醺 · 巨鹿路洋房 Bistro or 嘉里中心高空晚宴</h3>
+            <span class="badge-tag">烛光摇曳 · 深度交心</span>
+          </div>
+          <p class="node-desc">
+            华灯初上，雨水将南京西路的霓虹拉成修长的倒影。选一家有暖烛和低回爵士乐的小酒馆。碰一杯黑皮诺，切一份焦香安格斯肉眼，窗外雨声沙沙，桌前眼神脉脉。
+          </p>
+          <div class="highlight-box">
+            <strong>推荐氛围：</strong>Villa Le Bec 321、Polux by Paul Pairet、Cellar to Table，或静安香格里拉高空牛排馆。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 2: Interactive Spot Explorer -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">静安五大雨日地标精选</h2>
+      <span class="section-en">FEATURED SPOTS EXPLORER</span>
+    </div>
+
+    <div class="tab-container">
+      <div class="tab-pills" id="tab-pills">
+        <button class="tab-pill active" data-id="prada">PRADA 荣宅 (陕西北路)</button>
+        <button class="tab-pill" data-id="zhangyuan">张园 & 兴业太古汇</button>
+        <button class="tab-pill" data-id="ucca">UCCA Edge (苏河湾)</button>
+        <button class="tab-pill" data-id="duoyun">朵云书院 · 戏剧店</button>
+        <button class="tab-pill" data-id="kerry">静安嘉里中心 & 芮欧</button>
+      </div>
+
+      <div class="spot-content-panel" id="spot-display">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Part 3: Field Guide -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">静安绅士漫步锦囊</h2>
+      <span class="section-en">JING'AN RAINY TIPS</span>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🚇</div>
+        <div class="tip-title">静安寺「0淋雨地下网」</div>
+        <div class="tip-text">
+          静安寺站集聚 2/7/14 号线，地下通道四通八达，静安嘉里中心、芮欧百货、久光百货均可室内直通，雨天转场神不知鬼不觉。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🌂</div>
+        <div class="tip-title">湿伞入袋的礼貌</div>
+        <div class="tip-text">
+          进入洋房店铺或精品书店前，主动在门口取伞套为两人的雨伞套好，避免水渍滴落湿了她的衣角与包包。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧣</div>
+        <div class="tip-title">商场空调防凉</div>
+        <div class="tip-text">
+          雨天从室外湿冷走入室内商场，中央空调往往偏冷。随身可为她准备一件轻薄针织披肩，体贴入微。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📷</div>
+        <div class="tip-title">橱窗与水汽人像机位</div>
+        <div class="tip-text">
+          在张园或陕西北路咖啡馆，借着窗玻璃上的细碎水珠作前景，对焦在女朋友柔和的侧颜上，电影感焦外虚化自然流露。
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 4: Checklist -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">静安雨日行前清单</h2>
+      <span class="section-en">PRE-DEPARTURE CHECKLIST</span>
+    </div>
+
+    <div class="checklist-wrap">
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">在「PRADA 荣宅」或「UCCA」微信小程序提前预约好入场时段</span>
+      </div>
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">提前锁定巨鹿路/进贤路 Bistro 靠窗或暖调卡座（假日报位紧张）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">携带一把纯色优雅的长柄双人伞（入画极有海派质感）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">准备满电充电宝与擦镜纸（雨雾镜头水汽易凝结）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">规划好静安寺/南京西路地下换乘动线，避免地面叫车堵车</span>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-quote">“雨水打湿了百年洋房的砖石，也让喧嚣的静安，退回给彼此静静倾听的时光。”</p>
+      <p>Autumn Rainy Day Guide · Jing'an, Shanghai</p>
+    </footer>
+  </div>
+
+  <script>
+    const spotData = {
+      prada: {
+        name: "PRADA 荣宅 (陕西北路)",
+        vibe: "百年海派名门 · 民国复古洋房 · 彩绘玻璃光影",
+        desc: "始建于1918年的清末民初折衷主义独立大宅，曾是面粉大王荣宗敬家族故居。精雕细琢的木质护墙、复古壁炉与彩绘天顶玻璃。细雨落在雕花窗格外，宛如置身王家卫电影《花样年华》。",
+        photoTip: "彩色琉璃天顶下逆光侧影、复古八角房木楼梯转角回眸，穿复古深色裙装或毛呢风衣，出片高级典雅。",
+        rainTip: "陕西北路老洋房内部恒温干爽，出来步行仅3分钟即达恒隆广场与中信泰富商场避雨连廊。",
+        booking: "务必提前在「PRADA 荣宅」微信官方小程序预约实名登记。"
+      },
+      zhangyuan: {
+        name: "张园 & 兴业太古汇",
+        vibe: "海上第一名园 · 海派石库门红砖 · 国际奢尚连廊",
+        desc: "上海现存规模最大、保存最完整的中西合璧石库门建筑群。雨后的红砖清水墙质感深邃，汇聚了蓝瓶咖啡、路易威登等精致空间。与兴业太古汇地下直接相通。",
+        photoTip: "雨中撑一把纯黑或墨绿长柄伞走在石库门窄巷里，湿漉漉的青石地面倒映着沿街暖黄橱窗灯光，海派故事感极强。",
+        rainTip: "若雨势转大，可直接穿入张园地下通道进入兴业太古汇，室内拥有超大天幕穹顶、查公馆百年古建筑与数百家高品质餐饮。",
+        booking: "张园公共街区免费开放，部分特展在官方小程序预约。"
+      },
+      ucca: {
+        name: "UCCA Edge (苏河湾)",
+        vibe: "纽约当代艺术殿堂 · 俯瞰细雨苏州河 · 灰白极简空间",
+        desc: "位于静安苏河湾核心区盈凯文创广场，由知名建筑事务所 SO-IL 设计。高挑清冷的现代艺术展厅，顶层户外露台更可将雨雾笼罩的苏州河与摩登天际线尽收眼底。",
+        photoTip: "极简白墙与当代先锋装置前抓拍看展自然动态，灰白基调照片在朋友圈极显不俗审美与艺术品位。",
+        rainTip: "地铁8/12号线曲阜路站出站即达，毗邻大悦城与苏河湾万象天地，室内商圈衔接极顺。",
+        booking: "微信搜索「UCCA尤伦斯当代艺术中心」小程序购票预约。"
+      },
+      duoyun: {
+        name: "朵云书院 · 戏剧店 (长乐路)",
+        vibe: "老洋房回形旋转楼梯 · 戏剧经典台词 · 沉静墨香",
+        desc: "藏在巨鹿路长乐路街区的戏剧主题四层洋房书店。一楼旋转楼梯嵌满经典戏剧剧本金句，二三楼错落陈列戏剧、文学、音乐典籍，顶楼咖啡座正对着窗外滴雨的梧桐叶。",
+        photoTip: "在黑色螺旋楼梯间抬头或俯拍，利用书架暖光与戏剧台词背板作为背景，文艺知性拉满。",
+        rainTip: "洋房空间静谧，馆内提供手冲咖啡与甜点，两人并肩躲雨阅读，极其惬意。",
+        booking: "免费开放，节假日可提前在「世纪朵云」公众号预约入馆。"
+      },
+      kerry: {
+        name: "静安嘉里中心 & 芮欧百货",
+        vibe: "0淋雨地下王者 · 顶级烘焙与买手店 · 米其林云集",
+        desc: "静安寺核心双子星，通过地铁2/7/14号线地下管网无缝咬合。从B2到顶层全部被温暖香氛、精致买手店与米其林餐厅包裹，室外哪怕暴雨倾盆，室内依然悠然自得。",
+        photoTip: "芮欧B2的精致小食街区，或嘉里中心南区中央连廊的大型艺术装置旁，色彩丰富现代。",
+        rainTip: "雨天最强避难所！集地铁、车库、商场、影院、书店于一体，鞋袜从头到尾保持干爽洁净。",
+        booking: "自由漫步，正餐推荐提前在大众点评/美味不用等线上预排。"
+      }
+    };
+
+    function renderSpot(id) {
+      const data = spotData[id];
+      const container = document.getElementById('spot-display');
+      container.innerHTML = `
+        <div class="spot-hero-card">
+          <div class="spot-title-row">
+            <h3 class="spot-name">${data.name}</h3>
+            <span class="spot-vibe">${data.vibe}</span>
+          </div>
+          <p class="node-desc" style="margin-bottom: 0;">${data.desc}</p>
+        </div>
+        <div class="spot-grid-info">
+          <div class="info-card">
+            <div class="info-card-title">📸 专属出片机位</div>
+            <p class="info-card-text">${data.photoTip}</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">☔ 避雨与动线优势</div>
+            <p class="info-card-text">${data.rainTip}</p>
+          </div>
+          <div class="info-card" style="grid-column: 1 / -1;">
+            <div class="info-card-title">🎟️ 开放与预约指引</div>
+            <p class="info-card-text">${data.booking}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Tabs listener
+    const pills = document.querySelectorAll('.tab-pill');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        renderSpot(pill.dataset.id);
+      });
+    });
+
+    // Default spot
+    renderSpot('prada');
+
+    // Checklist toggling
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+    }
+
+    // --- Procedural Canvas Gentle Rain ---
+    const canvas = document.getElementById('rain-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const drops = [];
+    const dropCount = 130;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < dropCount; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 20 + 14,
+        speed: Math.random() * 7 + 8,
+        opacity: Math.random() * 0.32 + 0.15,
+        width: Math.random() * 1.2 + 0.6
+      });
+    }
+
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = '#c0d4e4';
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < dropCount; i++) {
+        const d = drops[i];
+        ctx.beginPath();
+        ctx.lineWidth = d.width;
+        ctx.globalAlpha = d.opacity;
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - 1.8, d.y + d.length);
+        ctx.stroke();
+
+        d.y += d.speed;
+        d.x -= 0.6;
+
+        if (d.y > height) {
+          d.y = -d.length;
+          d.x = Math.random() * (width + 100);
+        }
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    // --- Web Audio API Cafe & Rain Synthesizer ---
+    let audioCtx = null;
+    let isPlaying = false;
+    let rainGain = null;
+
+    const audioBtn = document.getElementById('toggle-audio-btn');
+    const audioIcon = document.getElementById('audio-icon');
+    const audioLabel = document.getElementById('audio-label');
+
+    function createCafeRainAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.038;
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // Lowpass filter for warm cafe rain
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(750, audioCtx.currentTime);
+
+      rainGain = audioCtx.createGain();
+      rainGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(rainGain);
+      rainGain.connect(audioCtx.destination);
+      whiteNoise.start();
+    }
+
+    audioBtn.addEventListener('click', () => {
+      if (!audioCtx) {
+        createCafeRainAudio();
+      }
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        rainGain.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.4);
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioIcon.textContent = '🔊';
+        audioLabel.textContent = '静音街角雨声';
+      } else {
+        rainGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.3);
+        isPlaying = false;
+        audioBtn.classList.remove('playing');
+        audioIcon.textContent = '🌧️';
+        audioLabel.textContent = '开启街角暖咖雨声';
+      }
+    });
+  </script>
+  <script src="player.js"></script>
+</body>
+</html>

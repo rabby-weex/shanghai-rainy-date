@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>十月四日 · 雨落沪上 | 专属约会漫游指南</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #0b1118;
+      --bg-surface: rgba(18, 28, 40, 0.72);
+      --bg-card: rgba(22, 34, 49, 0.65);
+      --bg-card-hover: rgba(30, 46, 66, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-highlight: rgba(226, 179, 131, 0.35);
+      --amber-warm: #e5ad74;
+      --amber-glow: rgba(229, 173, 116, 0.18);
+      --mist-blue: #8aa4ba;
+      --rain-cyan: #64b5f6;
+      --text-main: #f0f4f8;
+      --text-muted: #9bb0c1;
+      --text-dim: #62778a;
+      --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", Georgia, serif;
+      --font-display: "Cinzel", var(--font-serif);
+      --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.7;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Canvas background for procedural raindrops */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.68;
+    }
+
+    /* Ambient glow elements */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-1 {
+      top: -100px;
+      left: 15%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(229, 173, 116, 0.12) 0%, transparent 70%);
+    }
+    .glow-2 {
+      bottom: 10%;
+      right: 10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(100, 181, 246, 0.08) 0%, transparent 70%);
+    }
+
+    /* Container */
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Header & Weather Badge */
+    header {
+      padding: 60px 0 40px;
+      text-align: center;
+      position: relative;
+    }
+
+    .meta-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--amber-warm);
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(8px);
+    }
+
+    .meta-tag .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--amber-warm);
+      box-shadow: 0 0 8px var(--amber-warm);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    h1.hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(34px, 5.5vw, 54px);
+      font-weight: 600;
+      letter-spacing: 4px;
+      color: #fff;
+      margin-bottom: 16px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-subtitle {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 6px;
+      color: var(--mist-blue);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .hero-desc {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 32px;
+      line-height: 1.9;
+    }
+
+    /* Audio Controller & Mood Switch */
+    .controls-bar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 50px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ambient {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-highlight);
+      border-radius: 30px;
+      color: var(--amber-warm);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-ambient:hover {
+      background: rgba(229, 173, 116, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .btn-ambient.playing {
+      background: rgba(229, 173, 116, 0.25);
+      box-shadow: 0 0 20px rgba(229, 173, 116, 0.3);
+    }
+
+    /* Section Headers */
+    .section-title-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin: 50px 0 28px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 18px;
+      background: var(--amber-warm);
+      border-radius: 2px;
+    }
+
+    .section-en {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    /* Timeline Section */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 40px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 20px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--amber-warm), rgba(100, 181, 246, 0.3), transparent);
+    }
+
+    .timeline-node {
+      position: relative;
+      margin-bottom: 36px;
+    }
+
+    .node-pin {
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      border: 2px solid var(--amber-warm);
+      box-shadow: 0 0 10px var(--amber-glow);
+    }
+
+    .node-time {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--amber-warm);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .node-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+
+    .node-card:hover {
+      border-color: rgba(229, 173, 116, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .node-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(100, 181, 246, 0.12);
+      color: var(--rain-cyan);
+      border: 1px solid rgba(100, 181, 246, 0.2);
+    }
+
+    .node-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+
+    .highlight-box {
+      background: rgba(0, 0, 0, 0.25);
+      border-left: 2px solid var(--amber-warm);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #d1dde8;
+      margin-top: 10px;
+    }
+
+    .highlight-box strong {
+      color: var(--amber-warm);
+      font-weight: 600;
+    }
+
+    /* Museum Selector Interactive Tabs */
+    .museum-tab-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 28px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: 40px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: thin;
+    }
+
+    .tab-pills::-webkit-scrollbar {
+      height: 4px;
+    }
+    .tab-pills::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    .tab-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .tab-pill:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-pill.active {
+      color: #fff;
+      background: rgba(229, 173, 116, 0.16);
+      border-color: var(--amber-warm);
+      font-weight: 600;
+    }
+
+    .museum-content-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .museum-hero-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .museum-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .museum-name {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .museum-vibe {
+      font-size: 13px;
+      color: var(--amber-warm);
+      letter-spacing: 0.5px;
+    }
+
+    .museum-grid-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .info-card {
+      background: rgba(11, 17, 24, 0.6);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .info-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--rain-cyan);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-card-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Gentleman's Field Guide (Tips) */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.25s;
+    }
+
+    .tip-card:hover {
+      border-color: var(--border-highlight);
+      transform: translateY(-3px);
+    }
+
+    .tip-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .tip-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .tip-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Checklist Section */
+    .checklist-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .check-custom {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .checklist-item.checked .check-custom {
+      background: var(--amber-warm);
+      border-color: var(--amber-warm);
+    }
+
+    .checklist-item.checked .check-custom::after {
+      content: "✓";
+      color: #0b1118;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .checklist-item.checked .check-label {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    .check-label {
+      font-size: 14.5px;
+      color: #d8e2ec;
+      transition: color 0.2s;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .footer-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--mist-blue);
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 16px 60px;
+      }
+      header {
+        padding: 40px 0 24px;
+      }
+      .museum-tab-container {
+        padding: 20px 16px;
+      }
+      .timeline {
+        padding-left: 20px;
+      }
+      .node-pin {
+        left: -20px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+
+  <!-- Ambient light blobs -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+
+  <!-- Rain Canvas for realistic falling raindrops and mist -->
+  <canvas id="rain-canvas"></canvas>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 22px 0 10px; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--border-subtle);">
+      <span style="font-size: 12.5px; color: var(--text-dim); letter-spacing: 1px;">上海雨天约会漫游矩阵</span>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <a href="index.html" style="font-size: 13px; color: var(--amber-warm); font-weight: 600; text-decoration: none; padding: 5px 14px; border-radius: 20px; background: rgba(229, 173, 116, 0.15); border: 1px solid var(--amber-warm);">🏛️ 市区艺术线 (外滩/浦东)</a>
+        <a href="jingan.html" style="font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 5px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle);">☕ 静安梧桐线 (洋房/张园)</a>
+        <a href="xuhui.html" style="font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 5px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle);">🎻 徐汇艺韵线 (书院/黑石/西岸)</a>
+        <a href="jiading.html" style="font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 5px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle);">🎋 嘉定烟雨线 (保利剧院/远香湖)</a>
+        <a href="songjiang.html" style="font-size: 13px; color: var(--text-muted); text-decoration: none; padding: 5px 14px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle);">🏰 松江云间线 (广富林/泰晤士)</a>
+      </div>
+    </div>
+    <header>
+      <div class="meta-tag">
+        <span class="dot"></span>
+        <span>SHANGHAI · 10月4日 星期日 · 细雨微风 21°C</span>
+      </div>
+      <h1 class="hero-title">十月四日 · 雨落沪上</h1>
+      <p class="hero-subtitle">AUTUMN RAIN & CINEMATIC DATE GUIDE</p>
+      <p class="hero-desc">
+        下雨天从不是假期的遗憾，而是上帝为上海调好的胶片滤镜。<br>
+        免去长途奔波与湿鞋之扰，与心爱之人漫步在暖光与雨雾之间。
+      </p>
+
+      <div class="controls-bar">
+        <button id="toggle-audio-btn" class="btn-ambient">
+          <span id="audio-icon">🌧️</span>
+          <span id="audio-label">开启雨声白噪音</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Part 1: Timeline -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">全天心动时光线</h2>
+      <span class="section-en">ITINERARY TIMELINE</span>
+    </div>
+
+    <div class="timeline">
+      <!-- Node 1 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">10:30 - 12:30 ｜ MORNING</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">睡到自然醒 · 暖光 Brunch 唤醒味蕾</h3>
+            <span class="badge-tag">静安 / 南京西路</span>
+          </div>
+          <p class="node-desc">
+            假期无需早起赶场。避开早晨的凉意，选一家暖黄调、大落地窗的西餐厅坐下。玻璃外是淅淅沥沥的秋雨，桌上是滚烫的香醇拿铁与现烤羊角包。
+          </p>
+          <div class="highlight-box">
+            <strong>推荐打卡：</strong>O/MILLS (静安)、Baker & Spice、或静安嘉里中心地连餐厅（地铁2/7/14号线直通，全程不用打伞）。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 2 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">13:30 - 16:30 ｜ AFTERNOON</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">雨幕光影 · 室内艺术美学漫步</h3>
+            <span class="badge-tag">恒温干爽 · 极佳避雨</span>
+          </div>
+          <p class="node-desc">
+            午后雨势渐浓，正好躲进艺术殿堂。静下心来并肩看展，不仅能拍出极具格调的照片，更能在舒适的室内空间里自在交流彼此的审美与心情。
+          </p>
+          <div class="highlight-box">
+            <strong>专属定制：</strong>下方特备「五大艺术馆灵感切换器」，可根据她的喜好自由点选，即刻查看最佳看点与出片机位！
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 3 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">17:30 - 19:30 ｜ TWILIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">窗前听雨 · 烛光温情 Bistro 晚宴</h3>
+            <span class="badge-tag">浪漫微醺 · 深度交心</span>
+          </div>
+          <p class="node-desc">
+            华灯初上，街面雨水倒映着橙黄霓虹。避开吵闹的快餐，推开一家藏在老洋房或高空静谧处的精致小酒馆。切一份熟成牛排，抿一口黑皮诺或热红酒。
+          </p>
+          <div class="highlight-box">
+            <strong>推荐氛围：</strong>进贤路/巨鹿路温馨洋房法餐、或国金中心 ifc 室内顶奢餐厅（如莫尔顿扒房，窗边看雨夜陆家嘴）。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 4 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">20:00 - 22:00 ｜ NIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">丝绒夜色 · 现场爵士乐或小剧场</h3>
+            <span class="badge-tag">完美收官 · 仪式感拉满</span>
+          </div>
+          <p class="node-desc">
+            雨夜与爵士乐是天作之合。萨克斯与低音提琴悠扬流淌，灯光昏暗柔软，不需要太多言语，肩靠着肩聆听，就是假期最温暖的注脚。
+          </p>
+          <div class="highlight-box">
+            <strong>绝妙去处：</strong>林肯爵士乐上海中心 (外滩)、JZ Club，或者人民广场亚洲大厦星空间（全室内沉浸式音乐剧）。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 2: Museum & Gallery Selector -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">午后艺术馆自由切换</h2>
+      <span class="section-en">CURATED ART SPACES</span>
+    </div>
+
+    <div class="museum-tab-container">
+      <div class="tab-pills" id="tab-pills">
+        <button class="tab-pill active" data-id="map">浦东美术馆 MAP</button>
+        <button class="tab-pill" data-id="long">龙美术馆 (西岸馆)</button>
+        <button class="tab-pill" data-id="fosun">复星艺术中心 (BFC)</button>
+        <button class="tab-pill" data-id="prada">PRADA 荣宅</button>
+        <button class="tab-pill" data-id="aurora">震旦博物馆</button>
+      </div>
+
+      <div class="museum-content-panel" id="museum-display">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+
+    <!-- Part 3: Gentleman's Field Guide -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">男友满分细节锦囊</h2>
+      <span class="section-en">GENTLEMAN'S CODE</span>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🌂</div>
+        <div class="tip-title">双人长柄大雨伞</div>
+        <div class="tip-text">
+          拒绝两把小伞各自为阵！一把大伞两人并肩撑，身体自然靠近，且记得把伞身向她微倾70度，肩膀湿一点也是温柔。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧻</div>
+        <div class="tip-title">随身便携纸巾</div>
+        <div class="tip-text">
+          进餐厅或上车落座后，第一件事是主动递上干净纸巾，帮她轻拭包包手柄或衣袖上的雨水点滴，细节直击内心。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">👟</div>
+        <div class="tip-title">提前穿搭提醒</div>
+        <div class="tip-text">
+          前一晚温柔叮嘱：“明天有雨地面微滑，穿双舒服防滑、不怕水溅的鞋子哦，浅色帆布鞋先休息一天～”
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🚇</div>
+        <div class="tip-title">地铁通达优于堵车</div>
+        <div class="tip-text">
+          黄金周雨天核心商圈打车动辄排队上百人，优先规划“地铁站地下连通商场”路线，既省时又绝对不淋雨。
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 4: Interactive Checklist -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">行前确认清单</h2>
+      <span class="section-en">DATE READINESS CHECKLIST</span>
+    </div>
+
+    <div class="checklist-wrap">
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">提前在微信公众号预约锁定美术馆/艺术馆门票（国庆限流）</span>
+      </div>
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">预订好晚餐 Bistro 的靠窗或暖色卡座位置</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">准备好满电充电宝（看展打卡与拍照耗电快）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">后备箱或包里放好大号双人伞与干湿纸巾</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">提前查好地铁避雨换乘口与停车场室内动线</span>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-quote">“雨声是天然的白噪音，让繁华的上海，只剩下我们两个人的世界。”</p>
+      <p>Prepared for October 4th, 2026 · Shanghai Autumn Date</p>
+    </footer>
+  </div>
+
+  <script>
+    // --- Data for Art Spaces ---
+    const artSpaces = {
+      map: {
+        name: "浦东美术馆 (MAP)",
+        vibe: "外滩雨幕 · 电影感镜厅 · 现代巨构",
+        desc: "建筑大师让·努维尔代表作。2楼与3楼的「镜厅」拥有直面外滩的巨型通透玻璃，下雨天看对岸万国建筑被雨雾朦胧笼罩，如王家卫电影般如梦似幻。",
+        photoTip: "站在镜厅窗前，拍摄女朋友侧脸或背影剪影，利用玻璃倒影与烟雨外滩构成多重空间感，质感极高级。",
+        rainTip: "陆家嘴地铁站出来走地下通道至明珠环岛，馆内超大恒温，顶层可避雨眺望雨中江景。",
+        booking: "微信搜索「浦东美术馆」公众号提前购票预约。"
+      },
+      long: {
+        name: "龙美术馆 (西岸馆)",
+        vibe: "伞水倒锥 · 清水混凝土 · 极简高级灰",
+        desc: "建筑师柳亦春设计。标志性的清水混凝土穹顶在阴雨天光漫射下，呈现极其纯粹迷人的阴翳美学。冷淡、宽宏，适合穿深色大衣或风衣漫步。",
+        photoTip: "站在巨大的弧形混凝土墙下，利用纵深线条拍摄全身漫步动态，冷灰调照片发朋友圈吸赞率极高。",
+        rainTip: "看完展打车5分钟直达新地标「西岸梦中心」，室内连廊极丰富，坐拥一线江景咖啡馆与餐厅。",
+        booking: "微信搜索「龙美术馆」小程序，常设展与特展按需购买。"
+      },
+      fosun: {
+        name: "复星艺术中心 (BFC)",
+        vibe: "会跳舞的建筑 · 展商一体 · 0淋雨一条龙",
+        desc: "外滩金融中心核心地标，三层金色管风琴幕帘如水流转。常年举办先锋潮流当代艺术展，顶楼《数字空中花园》数字霓虹极具未来感。",
+        photoTip: "顶楼数字空中花园在雨雾里闪烁红绿数字跳动，极具梦幻赛博感；金色流转幕帘前撑伞合影也是经典机位。",
+        rainTip: "避雨天花板！与 BFC 商场室内无缝地下连通，看完展直接在商场吃米其林餐厅、逛文创书店、看电影，不沾一滴雨水。",
+        booking: "微信搜索「复星艺术中心」小程序提前预约购票。"
+      },
+      prada: {
+        name: "PRADA 荣宅 (陕西北路)",
+        vibe: "百年海派名门 · 民国复古洋房 · 琉璃光影",
+        desc: "建于1918年的清末民初折衷主义豪门宅邸，面砖、彩绘玻璃天顶、雕花木护墙板保存极完好。窗外秋雨绵绵，打在彩色木格窗上，宛若置身《花样年华》片场。",
+        photoTip: "利用彩色琉璃天顶漏下的暖光，或站在复古木楼梯转角拍摄回眸，优雅浪漫，几乎每个女生都会心动。",
+        rainTip: "陕西北路地处南京西路核心区，参观完毕后步行两分钟即进恒隆广场或梅龙镇伊势丹周边室内茶室躲雨。",
+        booking: "必须提前在「PRADA 荣宅」微信官方小程序实名预约入场（名额有限）。"
+      },
+      aurora: {
+        name: "震旦博物馆 (陆家嘴)",
+        vibe: "安藤忠雄操刀 · 闹市避世禅意 · 临江雅座",
+        desc: "由安藤忠雄改造的文化瑰宝，挑高五层的回旋楼梯与几何玻璃幕墙令人惊艳。珍藏中国古代玉器与佛像，人流极少，安静深邃。",
+        photoTip: "五楼的临江咖啡厅拥有大面落地窗，正对着雨中黄浦江。坐在此处手捧一杯咖啡侧望雨幕，宁静温婉。",
+        rainTip: "位于陆家嘴核心地段却极其清幽，避开了黄金周的人潮喧闹，两人可以在这里享受独处的私密时光。",
+        booking: "微信搜索「震旦博物馆」公众号预约参观。"
+      }
+    };
+
+    function renderMuseum(id) {
+      const data = artSpaces[id];
+      const container = document.getElementById('museum-display');
+      container.innerHTML = `
+        <div class="museum-hero-card">
+          <div class="museum-title-row">
+            <h3 class="museum-name">${data.name}</h3>
+            <span class="museum-vibe">${data.vibe}</span>
+          </div>
+          <p class="node-desc" style="margin-bottom: 0;">${data.desc}</p>
+        </div>
+        <div class="museum-grid-info">
+          <div class="info-card">
+            <div class="info-card-title">📸 独家拍照机位</div>
+            <p class="info-card-text">${data.photoTip}</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">☔ 避雨与周边动线</div>
+            <p class="info-card-text">${data.rainTip}</p>
+          </div>
+          <div class="info-card" style="grid-column: 1 / -1;">
+            <div class="info-card-title">🎟️ 预订指引</div>
+            <p class="info-card-text">${data.booking}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Tab buttons event
+    const tabPills = document.querySelectorAll('.tab-pill');
+    tabPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        tabPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        renderMuseum(pill.dataset.id);
+      });
+    });
+
+    // Initial render
+    renderMuseum('map');
+
+    // Checklist toggling
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+    }
+
+    // --- Procedural Canvas Rain & Mist Animation ---
+    const canvas = document.getElementById('rain-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const drops = [];
+    const dropCount = 140;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < dropCount; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 20 + 15,
+        speed: Math.random() * 7 + 9,
+        opacity: Math.random() * 0.35 + 0.15,
+        width: Math.random() * 1.2 + 0.6
+      });
+    }
+
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.strokeStyle = '#a5cbe8';
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < dropCount; i++) {
+        const d = drops[i];
+        ctx.beginPath();
+        ctx.lineWidth = d.width;
+        ctx.globalAlpha = d.opacity;
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - 2, d.y + d.length);
+        ctx.stroke();
+
+        d.y += d.speed;
+        d.x -= 0.6; // gentle slant
+
+        if (d.y > height) {
+          d.y = -d.length;
+          d.x = Math.random() * (width + 100);
+        }
+      }
+
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    // --- Web Audio API Procedural Rain Synthesizer ---
+    let audioCtx = null;
+    let isPlaying = false;
+    let rainGain = null;
+
+    const audioBtn = document.getElementById('toggle-audio-btn');
+    const audioIcon = document.getElementById('audio-icon');
+    const audioLabel = document.getElementById('audio-label');
+
+    function createRainAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // Buffer size for smooth sound
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      // Generate brown/pink noise suitable for rain
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      // Lowpass filter for muffled rain
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+
+      rainGain = audioCtx.createGain();
+      rainGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(rainGain);
+      rainGain.connect(audioCtx.destination);
+
+      whiteNoise.start();
+    }
+
+    audioBtn.addEventListener('click', () => {
+      if (!audioCtx) {
+        createRainAudio();
+      }
+
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        rainGain.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.4);
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioIcon.textContent = '🔊';
+        audioLabel.textContent = '静音雨声白噪音';
+      } else {
+        rainGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.3);
+        isPlaying = false;
+        audioBtn.classList.remove('playing');
+        audioIcon.textContent = '🌧️';
+        audioLabel.textContent = '开启雨声白噪音';
+      }
+    });
+  </script>
+  <script src="player.js"></script>
+</body>
+</html>

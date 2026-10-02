@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云间烟雨 · 秘境松江 | 水下遗址、英伦小镇与古园雨日指南</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-ink: #091118;
+      --bg-surface: rgba(15, 26, 38, 0.75);
+      --bg-card: rgba(20, 33, 48, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(118, 165, 156, 0.35);
+      --yunjian-cyan: #76a59c;     /* 广富林湖雾与霁青 */
+      --cyan-glow: rgba(118, 165, 156, 0.2);
+      --thames-brick: #c66956;     /* 泰晤士小镇英伦红砖 */
+      --underwater-gold: #e4b068;  /* 水下展馆金色浮雕与暖灯 */
+      --water-blue: #6297b8;
+      --text-main: #f3f6fa;
+      --text-muted: #9eb2c5;
+      --text-dim: #607588;
+      --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", STSong, serif;
+      --font-display: "Cinzel", var(--font-serif);
+      --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-ink);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Canvas for falling rain drops */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.65;
+    }
+
+    /* Ambient atmospheric glow */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-cyan {
+      top: -80px;
+      right: 15%;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(118, 165, 156, 0.15) 0%, transparent 70%);
+    }
+    .glow-brick {
+      bottom: 12%;
+      left: 12%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(198, 105, 86, 0.12) 0%, transparent 70%);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Multi-route switcher navigation */
+    .nav-routes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 0 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .routes-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .route-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.2s;
+    }
+    .route-link:hover {
+      color: #fff;
+      border-color: var(--border-accent);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .route-link.current {
+      color: var(--yunjian-cyan);
+      border-color: var(--yunjian-cyan);
+      background: rgba(118, 165, 156, 0.18);
+      font-weight: 600;
+    }
+
+    /* Header */
+    header {
+      padding: 44px 0 36px;
+      text-align: center;
+    }
+
+    .badge-weather {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--yunjian-cyan);
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      backdrop-filter: blur(10px);
+    }
+    .badge-weather .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--yunjian-cyan);
+      box-shadow: 0 0 8px var(--yunjian-cyan);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    h1.hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(34px, 5.5vw, 54px);
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: #fff;
+      margin-bottom: 14px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-sub {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .hero-quote {
+      font-family: var(--font-serif);
+      font-size: 15.5px;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 30px;
+      line-height: 1.9;
+    }
+
+    /* Controls */
+    .controls-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ambient {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-accent);
+      border-radius: 30px;
+      color: var(--yunjian-cyan);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .btn-ambient:hover {
+      background: rgba(118, 165, 156, 0.16);
+      transform: translateY(-1px);
+    }
+    .btn-ambient.playing {
+      background: rgba(118, 165, 156, 0.26);
+      box-shadow: 0 0 20px rgba(118, 165, 156, 0.35);
+    }
+
+    /* Section Titles */
+    .section-title-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin: 48px 0 26px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 18px;
+      background: var(--yunjian-cyan);
+      border-radius: 2px;
+    }
+
+    .section-en {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 36px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 20px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--yunjian-cyan), rgba(198, 105, 86, 0.4), transparent);
+    }
+
+    .timeline-node {
+      position: relative;
+      margin-bottom: 34px;
+    }
+    .node-pin {
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--bg-ink);
+      border: 2px solid var(--yunjian-cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+    .node-time {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--yunjian-cyan);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .node-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .node-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .node-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(118, 165, 156, 0.12);
+      color: var(--yunjian-cyan);
+      border: 1px solid rgba(118, 165, 156, 0.25);
+    }
+
+    .node-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .highlight-box {
+      background: rgba(0, 0, 0, 0.28);
+      border-left: 2px solid var(--yunjian-cyan);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #d1dde8;
+      margin-top: 10px;
+    }
+    .highlight-box strong {
+      color: var(--underwater-gold);
+      font-weight: 600;
+    }
+
+    /* Spot Selector Tabs */
+    .tab-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 28px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: 40px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: thin;
+    }
+    .tab-pills::-webkit-scrollbar {
+      height: 4px;
+    }
+    .tab-pills::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    .tab-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .tab-pill:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-pill.active {
+      color: #fff;
+      background: rgba(118, 165, 156, 0.18);
+      border-color: var(--yunjian-cyan);
+      font-weight: 600;
+    }
+
+    .spot-content-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .spot-hero-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .spot-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .spot-name {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .spot-vibe {
+      font-size: 13px;
+      color: var(--thames-brick);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .spot-grid-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .info-card {
+      background: rgba(10, 17, 25, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .info-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--yunjian-cyan);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-card-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Tips Grid */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.25s;
+    }
+    .tip-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-3px);
+    }
+
+    .tip-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .tip-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .tip-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Checklist */
+    .checklist-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .check-custom {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .checklist-item.checked .check-custom {
+      background: var(--yunjian-cyan);
+      border-color: var(--yunjian-cyan);
+    }
+    .checklist-item.checked .check-custom::after {
+      content: "✓";
+      color: #091118;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .checklist-item.checked .check-label {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    .check-label {
+      font-size: 14.5px;
+      color: #d8e2ec;
+      transition: color 0.2s;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .footer-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--yunjian-cyan);
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 16px 60px;
+      }
+      header {
+        padding: 30px 0 20px;
+      }
+      .tab-container {
+        padding: 20px 16px;
+      }
+      .timeline {
+        padding-left: 20px;
+      }
+      .node-pin {
+        left: -20px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+
+  <!-- Ambient light blobs -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-brick"></div>
+
+  <!-- Rain Canvas for rainfall -->
+  <canvas id="rain-canvas"></canvas>
+
+  <div class="container">
+    <!-- Top Route Navigation Switcher -->
+    <div class="nav-routes">
+      <span style="font-size: 12.5px; color: var(--text-dim); letter-spacing: 1px;">上海雨天约会漫游矩阵</span>
+      <div class="routes-pills">
+        <a href="index.html" class="route-link">🏛️ 市区艺术线 (外滩/浦东)</a>
+        <a href="jingan.html" class="route-link">☕ 静安梧桐线 (洋房/张园)</a>
+        <a href="xuhui.html" class="route-link">🎻 徐汇艺韵线 (书院/黑石/西岸)</a>
+        <a href="jiading.html" class="route-link">🎋 嘉定烟雨线 (保利剧院/远香湖)</a>
+        <a href="songjiang.html" class="route-link current">🏰 松江云间线 (广富林/泰晤士)</a>
+      </div>
+    </div>
+
+    <header>
+      <div class="badge-weather">
+        <span class="pulse-dot"></span>
+        <span>SHANGHAI SONGJIANG · 云间水木 · 细雨如织 21°C</span>
+      </div>
+      <h1 class="hero-title">云间烟雨 · 秘境松江</h1>
+      <p class="hero-sub">UNDERWATER ANCIENT RUINS & BRITISH THAMES RAIN</p>
+      <p class="hero-quote">
+        “看三座陶色屋顶静静漂浮在烟雨湖泊中，走进水下五米的文明深处；<br>
+        又或漫步在泰晤士小镇泛着雨光的红砖街角，于钟书阁的书殿穹顶下倾听水滴声。”
+      </p>
+
+      <div class="controls-bar">
+        <button id="toggle-audio-btn" class="btn-ambient">
+          <span id="audio-icon">🌧️</span>
+          <span id="audio-label">开启云间湖雨声</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Part 1: Timeline -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">松江一日秘境时光线</h2>
+      <span class="section-en">CURATED SCHEDULE</span>
+    </div>
+
+    <div class="timeline">
+      <!-- Node 1 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">10:00 - 12:30 ｜ MORNING</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">异国雨雾 · 泰晤士小镇英伦漫步 & 钟书阁品茗</h3>
+            <span class="badge-tag">英伦街区 / 最美书店</span>
+          </div>
+          <p class="node-desc">
+            微凉的秋雨中抵达泰晤士小镇。湿润的红砖街道、哥特式大教堂钟楼，与一柄黑伞构成绝妙的英伦电影画面。躲进被称为“最美书店”的<strong>钟书阁（一期/二期）</strong>，踏在镜面书海地面上，伴着手冲咖啡香与雨滴敲打玻璃的节奏静静看书。
+          </p>
+          <div class="highlight-box">
+            <strong>避雨早午餐：</strong>小镇内汇集多家英式下午茶、窑炉披萨与温馨西餐馆，小镇地下停车场车位充足。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 2 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">13:00 - 16:00 ｜ AFTERNOON</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">水下奇观 · 广富林文化展示馆 (水下博物馆)</h3>
+            <span class="badge-tag">上海之根 · 100%恒温全室内</span>
+          </div>
+          <p class="node-desc">
+            雨天的广富林，水上屋顶被雾气笼罩，美如仙境。乘电梯深入水下5米的展示馆，完全隔绝外界风雨。从5000年前良渚原始村落，走过汉唐市井、明清松江府，直到民国黄包车街区。水下声光电效果震撼，二人缓步穿越五千年。
+          </p>
+          <div class="highlight-box">
+            <strong>核心看点：</strong>水下展厅出口处的回廊与水景天井，仰头看雨丝落在头顶的水面玻璃上，光影极其梦幻。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 3 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">16:30 - 18:00 ｜ TWILIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">古意听雨 · 醉白池曲廊打残荷 or 宰相府明代古堂</h3>
+            <span class="badge-tag">古典园林 · 听雨轩</span>
+          </div>
+          <p class="node-desc">
+            <strong>方案A（古典园林）：</strong>前往松江老城<strong>醉白池公园</strong>，上海五大古典名园之一。曲折有顶回廊纵横交错，全程不湿鞋。雨打芭蕉、滴落水荷，充满文人墨客的诗情意趣。<br>
+            <strong>方案B（原处避雨）：</strong>在广富林内部的<strong>宰相府酒店</strong>茶室坐下，整栋明代大夫第古宅原状迁建，雕梁画栋，煮一壶老白茶极具仪式感。
+          </p>
+        </div>
+      </div>
+
+      <!-- Node 4 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">18:30 - 20:30 ｜ NIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">暖锅归席 · 广富林私房暖宴 or 松江印象城</h3>
+            <span class="badge-tag">暖意驱湿 · 完美归程</span>
+          </div>
+          <p class="node-desc">
+            晚餐可留在广富林宰相府品尝地道江南私房暖宴；或驱车10分钟前往<strong>松江印象城</strong>。商场内拥有巨型宝可梦皮卡丘雕塑与丰富的全室内特色餐厅，吃上一顿热气腾腾的寿喜烧或潮汕牛肉火锅，彻底温暖身心。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 2: Interactive Spot Explorer -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">松江五大雨日地标精选</h2>
+      <span class="section-en">FEATURED SPOTS EXPLORER</span>
+    </div>
+
+    <div class="tab-container">
+      <div class="tab-pills" id="tab-pills">
+        <button class="tab-pill active" data-id="guangfulin">广富林水下文化展示馆</button>
+        <button class="tab-pill" data-id="thames">泰晤士小镇 & 钟书阁</button>
+        <button class="tab-pill" data-id="zaixiangfu">广富林宰相府 (明代古宅)</button>
+        <button class="tab-pill" data-id="zuibaichi">醉白池 · 听雨廊桥</button>
+        <button class="tab-pill" data-id="songjiangmega">松江印象城 (巨型皮卡丘)</button>
+      </div>
+
+      <div class="spot-content-panel" id="spot-display">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Part 3: Field Guide -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">松江雨日自驾与漫游锦囊</h2>
+      <span class="section-en">SONGJIANG RAINY TIPS</span>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🚗</div>
+        <div class="tip-title">自驾湖底地下车库</div>
+        <div class="tip-text">
+          广富林设有直通朱雀门/展示馆的超大地下湖底停车场，自驾前往车位充足且完全无需暴露在风雨之中。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🧥</div>
+        <div class="tip-title">风衣与纯黑长柄伞</div>
+        <div class="tip-text">
+          泰晤士小镇是典型的英伦哥特风格，一件卡其色或深灰风衣，撑一把长柄伞漫步在石板路上，电影感直逼伦敦街头。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">💧</div>
+        <div class="tip-title">水下展馆温水准备</div>
+        <div class="tip-text">
+          水下文化展示馆面积广阔，走完全程约需1.5~2小时，室内恒温干燥，随身为她准备一个温水保温杯十分体贴。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🥮</div>
+        <div class="tip-title">松江传统名点暖胃</div>
+        <div class="tip-text">
+          途经松江老城若遇老字号草庐点心，买两只刚出炉热气腾腾的鲜肉包与定胜糕，地道松江小吃温暖人心。
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 4: Checklist -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">松江雨日出发清单</h2>
+      <span class="section-en">PRE-DEPARTURE CHECKLIST</span>
+    </div>
+
+    <div class="checklist-wrap">
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">在「广富林文化遗址」官方小程序提前预约购买水下文化展示馆门票</span>
+      </div>
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">确认自驾车况并设置目的地为「广富林文化遗址朱雀门地下停车场」</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">准备一把大号纯色长柄伞（泰晤士小镇与园林打卡绝佳道具）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">备齐相机电池与充电宝（水下造景与英伦建筑耗电极快）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">预定好晚餐（宰相府餐厅或印象城特色暖锅，避开饭点排队）</span>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-quote">“水下五千年的时光静静流淌，烟雨润湿了云间城郭。在这个雨天，牵你的手走过岁月长河。”</p>
+      <p>Autumn Rainy Day Guide · Songjiang, Shanghai</p>
+    </footer>
+  </div>
+
+  <script>
+    const spotData = {
+      guangfulin: {
+        name: "广富林水下文化展示馆",
+        vibe: "漂浮湖中屋顶 · 水下五米沉浸穿越 · 震撼上海之根",
+        desc: "被称为“漂浮在水上的博物馆”，展厅完全建在富林湖面之下5米深处。从水上只能看到三座宛如陶罐倒扣的斜屋顶，雨雾中水波荡漾如仙境。展厅内部以实景蜡像、全息光影复原史前先民伐木捕鱼到民国繁华十里洋场，100%全室内干爽震撼。",
+        photoTip: "在水上栈道以三座半浸在雨雾湖水中的屋顶为背景撑伞拍照；水下展厅民国老火车站布景前抓拍复古穿越感合影。",
+        rainTip: "雨天终极室内避难所！自驾朱雀门停车场地下直达入口，全程不必淋雨，展厅内恒温舒适。",
+        booking: "广富林公共园区免费，参观水下展示馆需在「广富林文化遗址」官方小程序提前购票预约。"
+      },
+      thames: {
+        name: "泰晤士小镇 & 钟书阁",
+        vibe: "英伦红砖街区 · 哥特大教堂 · 镜面书海殿堂",
+        desc: "全方位复刻英式小镇风情，红石墙、尖顶排屋、鹅卵石街道与青铜雕像。藏在小镇里的钟书阁一期与二期是上海书店美学天花板，地板透明玻璃下铺满书籍，天花板镜面无限延伸。",
+        photoTip: "在哥特式大教堂钟楼前的大台阶，两人共撑一把长柄黑伞拍摄远景剪影；钟书阁书海回廊拍摄安静阅读的侧颜。",
+        rainTip: "小镇多处咖啡馆、书店与餐厅均有遮雨廊檐，小镇车库停车方便。",
+        booking: "小镇全天免费开放，钟书阁免费入内阅读打卡。"
+      },
+      zaixiangfu: {
+        name: "广富林宰相府酒店 (明代古建)",
+        vibe: "明代徽派大夫第原建 · 雕梁画栋 · 雨夜品茗暖席",
+        desc: "酒店大堂由一座具有近500年历史的明代江西宰相府第整体迁建复原而成，数千构件无一颗铁钉。中庭四水归堂，雨水顺着天井瓦当滑落池中。雨天在此煮一壶热茶或品尝江南精致私房菜，格调极高。",
+        photoTip: "在挑高大堂雕花藻井下或雨水天井前，拍摄古风意境特写，极具东方古典温婉之美。",
+        rainTip: "坐落于广富林遗址内，配有独立室内通道与地下车库直梯，完全免除室外雨淋。",
+        booking: "餐饮与茶室建议提前致电或通过平台预订座席。"
+      },
+      zuibaichi: {
+        name: "醉白池 · 听雨廊桥",
+        vibe: "上海五大古典名园 · 董其昌故迹 · 曲廊避雨打残荷",
+        desc: "历经宋、明、清数百年的江南名园，相传为明代书画大家董其昌觞咏处。园中主池古木葱郁，建有回形复廊迂回环抱。雨声敲打芭蕉与残荷，廊檐滴水如帘，步移景异却不湿衣鞋。",
+        photoTip: "在雕花木窗漏景前，利用回廊立柱构成天然画框，捕捉女朋友凭栏听雨的温婉神韵。",
+        rainTip: "园林内部游步道多由带顶曲廊连接，青石板雨后微滑，建议穿舒适防滑鞋。",
+        booking: "门票仅12元，现场或文旅平台均可便捷购票。"
+      },
+      songjiangmega: {
+        name: "松江印象城 (宝可梦潮玩地标)",
+        vibe: "巨型皮卡丘雕塑 · 全室内潮流商业体 · 暖锅避雨港",
+        desc: "松江新城核心商业航母，四层露台耸立着超大十米高皮卡丘雕塑。商场空间极具现代感，汇聚数十家热门餐饮、CGV影城与潮玩旗舰店。在下大雨的夜晚，是避雨饱餐、看一场电影的绝佳据点。",
+        photoTip: "4楼露台可与巨型皮卡丘打卡合影（雨天可从室内大玻璃窗视角同框拍摄）。",
+        rainTip: "商场地下停车场巨大，自驾极为顺畅，室内温暖干爽，从下午玩到深夜无压力。",
+        booking: "自由出入，热门餐厅可在大众点评提前取号。"
+      }
+    };
+
+    function renderSpot(id) {
+      const data = spotData[id];
+      const container = document.getElementById('spot-display');
+      container.innerHTML = `
+        <div class="spot-hero-card">
+          <div class="spot-title-row">
+            <h3 class="spot-name">${data.name}</h3>
+            <span class="spot-vibe">${data.vibe}</span>
+          </div>
+          <p class="node-desc" style="margin-bottom: 0;">${data.desc}</p>
+        </div>
+        <div class="spot-grid-info">
+          <div class="info-card">
+            <div class="info-card-title">📸 专属出片机位</div>
+            <p class="info-card-text">${data.photoTip}</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">☔ 避雨与动线优势</div>
+            <p class="info-card-text">${data.rainTip}</p>
+          </div>
+          <div class="info-card" style="grid-column: 1 / -1;">
+            <div class="info-card-title">🎟️ 开放与预约指引</div>
+            <p class="info-card-text">${data.booking}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Tabs listener
+    const pills = document.querySelectorAll('.tab-pill');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        renderSpot(pill.dataset.id);
+      });
+    });
+
+    renderSpot('guangfulin');
+
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+    }
+
+    // --- Procedural Canvas Rain ---
+    const canvas = document.getElementById('rain-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const drops = [];
+    const dropCount = 120;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < dropCount; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 20 + 14,
+        speed: Math.random() * 7 + 8,
+        opacity: Math.random() * 0.3 + 0.14,
+        width: Math.random() * 1.1 + 0.6
+      });
+    }
+
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = '#9abec7';
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < dropCount; i++) {
+        const d = drops[i];
+        ctx.beginPath();
+        ctx.lineWidth = d.width;
+        ctx.globalAlpha = d.opacity;
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - 1.6, d.y + d.length);
+        ctx.stroke();
+
+        d.y += d.speed;
+        d.x -= 0.5;
+
+        if (d.y > height) {
+          d.y = -d.length;
+          d.x = Math.random() * (width + 90);
+        }
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    // --- Web Audio API Lake Synthesizer ---
+    let audioCtx = null;
+    let isPlaying = false;
+    let rainGain = null;
+
+    const audioBtn = document.getElementById('toggle-audio-btn');
+    const audioIcon = document.getElementById('audio-icon');
+    const audioLabel = document.getElementById('audio-label');
+
+    function createLakeRainAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.038;
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(680, audioCtx.currentTime);
+
+      rainGain = audioCtx.createGain();
+      rainGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(rainGain);
+      rainGain.connect(audioCtx.destination);
+      whiteNoise.start();
+    }
+
+    audioBtn.addEventListener('click', () => {
+      if (!audioCtx) {
+        createLakeRainAudio();
+      }
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        rainGain.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.4);
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioIcon.textContent = '🔊';
+        audioLabel.textContent = '静音云间雨声';
+      } else {
+        rainGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.3);
+        isPlaying = false;
+        audioBtn.classList.remove('playing');
+        audioIcon.textContent = '🌧️';
+        audioLabel.textContent = '开启云间湖雨声';
+      }
+    });
+  </script>
+  <script src="player.js"></script>
+</body>
+</html>

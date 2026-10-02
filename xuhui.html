@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>梧桐琴韵 · 艺境徐汇 | 书院、黑胶洋房与西岸雨日指南</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Noto+Serif+SC:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-ink: #0c1219;
+      --bg-surface: rgba(18, 27, 39, 0.75);
+      --bg-card: rgba(23, 35, 50, 0.65);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(223, 167, 102, 0.35);
+      --gramophone-gold: #dfa766;  /* 留声机暖铜金与教堂灯光 */
+      --gold-glow: rgba(223, 167, 102, 0.18);
+      --blackstone-green: #63887c; /* 黑石公寓与复兴中路梧桐青翠 */
+      --bistro-rose: #be6d77;      /* 衡复法式小酒馆与玫瑰红酒色 */
+      --river-blue: #6ca0bf;
+      --text-main: #f3f6fa;
+      --text-muted: #9eb2c5;
+      --text-dim: #63778a;
+      --font-serif: "Noto Serif SC", "Songti SC", "Source Han Serif SC", STSong, serif;
+      --font-display: "Cinzel", var(--font-serif);
+      --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-ink);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.75;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Canvas for falling rain drops */
+    #rain-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.65;
+    }
+
+    /* Ambient atmospheric glow */
+    .ambient-glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-gold {
+      top: -80px;
+      left: 15%;
+      width: 520px;
+      height: 520px;
+      background: radial-gradient(circle, rgba(223, 167, 102, 0.14) 0%, transparent 70%);
+    }
+    .glow-green {
+      bottom: 12%;
+      right: 12%;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(99, 136, 124, 0.12) 0%, transparent 70%);
+    }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Multi-route switcher navigation */
+    .nav-routes {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 0 10px;
+      flex-wrap: wrap;
+      gap: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .routes-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .route-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 14px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+      transition: all 0.2s;
+    }
+    .route-link:hover {
+      color: #fff;
+      border-color: var(--border-accent);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .route-link.current {
+      color: var(--gramophone-gold);
+      border-color: var(--gramophone-gold);
+      background: rgba(223, 167, 102, 0.16);
+      font-weight: 600;
+    }
+
+    /* Header */
+    header {
+      padding: 44px 0 36px;
+      text-align: center;
+    }
+
+    .badge-weather {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-accent);
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--gramophone-gold);
+      letter-spacing: 1.5px;
+      margin-bottom: 22px;
+      backdrop-filter: blur(10px);
+    }
+    .badge-weather .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gramophone-gold);
+      box-shadow: 0 0 8px var(--gramophone-gold);
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    h1.hero-title {
+      font-family: var(--font-serif);
+      font-size: clamp(34px, 5.5vw, 54px);
+      font-weight: 600;
+      letter-spacing: 5px;
+      color: #fff;
+      margin-bottom: 14px;
+      text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .hero-sub {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 6px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    .hero-quote {
+      font-family: var(--font-serif);
+      font-size: 15.5px;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin: 0 auto 30px;
+      line-height: 1.9;
+    }
+
+    /* Controls */
+    .controls-bar {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .btn-ambient {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 22px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-accent);
+      border-radius: 30px;
+      color: var(--gramophone-gold);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    .btn-ambient:hover {
+      background: rgba(223, 167, 102, 0.16);
+      transform: translateY(-1px);
+    }
+    .btn-ambient.playing {
+      background: rgba(223, 167, 102, 0.26);
+      box-shadow: 0 0 20px rgba(223, 167, 102, 0.35);
+    }
+
+    /* Section Titles */
+    .section-title-wrap {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin: 48px 0 26px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-title::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 18px;
+      background: var(--gramophone-gold);
+      border-radius: 2px;
+    }
+
+    .section-en {
+      font-family: var(--font-display);
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--text-dim);
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 36px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 10px;
+      bottom: 20px;
+      width: 1px;
+      background: linear-gradient(to bottom, var(--gramophone-gold), rgba(99, 136, 124, 0.4), transparent);
+    }
+
+    .timeline-node {
+      position: relative;
+      margin-bottom: 34px;
+    }
+    .node-pin {
+      position: absolute;
+      left: -28px;
+      top: 6px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--bg-ink);
+      border: 2px solid var(--gramophone-gold);
+      box-shadow: 0 0 10px var(--gold-glow);
+    }
+    .node-time {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 1.5px;
+      color: var(--gramophone-gold);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .node-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(10px);
+      transition: border-color 0.25s, transform 0.25s;
+    }
+    .node-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .node-title {
+      font-family: var(--font-serif);
+      font-size: 19px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .badge-tag {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      background: rgba(223, 167, 102, 0.12);
+      color: var(--gramophone-gold);
+      border: 1px solid rgba(223, 167, 102, 0.25);
+    }
+
+    .node-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 14px;
+      line-height: 1.8;
+    }
+
+    .highlight-box {
+      background: rgba(0, 0, 0, 0.28);
+      border-left: 2px solid var(--gramophone-gold);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #d1dde8;
+      margin-top: 10px;
+    }
+    .highlight-box strong {
+      color: var(--gramophone-gold);
+      font-weight: 600;
+    }
+
+    /* Spot Selector Tabs */
+    .tab-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 28px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: 40px;
+    }
+
+    .tab-pills {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 14px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: thin;
+    }
+    .tab-pills::-webkit-scrollbar {
+      height: 4px;
+    }
+    .tab-pills::-webkit-scrollbar-thumb {
+      background: var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    .tab-pill {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+    .tab-pill:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .tab-pill.active {
+      color: #fff;
+      background: rgba(223, 167, 102, 0.18);
+      border-color: var(--gramophone-gold);
+      font-weight: 600;
+    }
+
+    .spot-content-panel {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    .spot-hero-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .spot-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .spot-name {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .spot-vibe {
+      font-size: 13px;
+      color: var(--bistro-rose);
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .spot-grid-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 6px;
+    }
+
+    .info-card {
+      background: rgba(12, 18, 26, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .info-card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gramophone-gold);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-card-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Tips Grid */
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .tip-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 20px;
+      transition: all 0.25s;
+    }
+    .tip-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-3px);
+    }
+
+    .tip-icon {
+      font-size: 24px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+
+    .tip-title {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: #fff;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .tip-text {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Checklist */
+    .checklist-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      user-select: none;
+    }
+    .checklist-item:last-child {
+      border-bottom: none;
+    }
+
+    .check-custom {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .checklist-item.checked .check-custom {
+      background: var(--gramophone-gold);
+      border-color: var(--gramophone-gold);
+    }
+    .checklist-item.checked .check-custom::after {
+      content: "✓";
+      color: #0c1219;
+      font-size: 13px;
+      font-weight: bold;
+    }
+    .checklist-item.checked .check-label {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    .check-label {
+      font-size: 14.5px;
+      color: #d8e2ec;
+      transition: color 0.2s;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 40px 0 20px;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    .footer-quote {
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--gramophone-gold);
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 0 16px 60px;
+      }
+      header {
+        padding: 30px 0 20px;
+      }
+      .tab-container {
+        padding: 20px 16px;
+      }
+      .timeline {
+        padding-left: 20px;
+      }
+      .node-pin {
+        left: -20px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="player.css">
+</head>
+<body>
+
+  <!-- Ambient lights -->
+  <div class="ambient-glow glow-gold"></div>
+  <div class="ambient-glow glow-green"></div>
+
+  <!-- Rain Canvas -->
+  <canvas id="rain-canvas"></canvas>
+
+  <div class="container">
+    <!-- Top Route Navigation Switcher -->
+    <div class="nav-routes">
+      <span style="font-size: 12.5px; color: var(--text-dim); letter-spacing: 1px;">上海雨天约会漫游矩阵</span>
+      <div class="routes-pills">
+        <a href="index.html" class="route-link">🏛️ 市区艺术线 (外滩/浦东)</a>
+        <a href="jingan.html" class="route-link">☕ 静安梧桐线 (洋房/张园)</a>
+        <a href="xuhui.html" class="route-link current">🎻 徐汇艺韵线 (书院/黑石/西岸)</a>
+        <a href="jiading.html" class="route-link">🎋 嘉定烟雨线 (保利剧院/远香湖)</a>
+        <a href="songjiang.html" class="route-link">🏰 松江云间线 (广富林/泰晤士)</a>
+      </div>
+    </div>
+
+    <header>
+      <div class="badge-weather">
+        <span class="pulse-dot"></span>
+        <span>SHANGHAI XUHUI · 琴声与江风 · 秋雨连绵 21°C</span>
+      </div>
+      <h1 class="hero-title">梧桐琴韵 · 艺境徐汇</h1>
+      <p class="hero-sub">LITERARY CATHEDRAL, VINYL MANSIONS & WATERFRONT ART</p>
+      <p class="hero-quote">
+        “当徐家汇大教堂的钟声穿透雨幕，当黑石公寓的留声机缓缓摇起慢歌。<br>
+        在徐汇，雨天是一曲流动的大提琴，从百年衡复的洋房琴键，一路弹唱至西岸江边的艺术仓库。”
+      </p>
+
+      <div class="controls-bar">
+        <button id="toggle-audio-btn" class="btn-ambient">
+          <span id="audio-icon">🌧️</span>
+          <span id="audio-label">开启黑胶留声雨声</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Part 1: Timeline -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">徐汇一日诗意时光线</h2>
+      <span class="section-en">CURATED SCHEDULE</span>
+    </div>
+
+    <div class="timeline">
+      <!-- Node 1 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">10:30 - 12:30 ｜ MORNING</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">晨光圣殿 · 徐家汇书院听雨 & 大教堂对景 Brunch</h3>
+            <span class="badge-tag">徐家汇核心区</span>
+          </div>
+          <p class="node-desc">
+            从地铁徐家汇站地下直达徐家汇书院。一楼中庭正中是3D打印的宏伟巴西利卡式「光启之门」，挑空三层的大阅览厅明亮开阔。坐在二楼大落地窗前，正对着雨幕中威严的徐家汇天主教堂双塔，书香与雨声交融。
+          </p>
+          <div class="highlight-box">
+            <strong>避雨早午餐：</strong>书院一楼自带精品咖啡文创区；或穿地下连通至美罗城、港汇恒隆广场品尝精致西餐，全程不湿鞋袜。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 2 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">13:30 - 15:30 ｜ AFTERNOON</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">黑胶留声 · 黑石公寓 M+ 音乐街区老洋房漫步</h3>
+            <span class="badge-tag">复兴中路 / 音乐圣地</span>
+          </div>
+          <p class="node-desc">
+            来到对街便是上海交响乐团的百年黑石公寓（1924年建造）。这幢折衷主义大宅底层藏着以音乐为主题的「幸福集荟」书店与黑胶唱片咖啡馆。戴上耳机聆听经典爵士与肖邦夜曲，窗外雨打老墙爬山虎，浪漫深邃。
+          </p>
+          <div class="highlight-box">
+            <strong>出片亮点：</strong>黑石公寓入口经典的科林斯巨柱门廊，以及书店内部按五线谱黑白键设计的拱形走廊，极具古典浪漫情调。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 3 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">16:00 - 18:00 ｜ TWILIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">江畔潮涌 · 西岸梦中心 (Gate M) 室内水岸艺术街区</h3>
+            <span class="badge-tag">西汇滨江 / 全天候连廊</span>
+          </div>
+          <p class="node-desc">
+            从衡复打车15分钟转战西岸。全新地标<strong>西岸梦中心</strong>由百年水泥厂改建，超大挑空的工业艺术仓体被室内连廊环环相扣。透过沿江巨大玻璃幕墙，看黄浦江来往货船在雨雾中划出波纹，完全免受风雨侵扰。
+          </p>
+          <div class="highlight-box">
+            <strong>备选艺术馆：</strong>步行可达<strong>西岸美术馆</strong>，正在展出法国蓬皮杜中心常设现代艺术大展，纯净玉石立方体内看展格外惬意。
+          </div>
+        </div>
+      </div>
+
+      <!-- Node 4 -->
+      <div class="timeline-node">
+        <div class="node-pin"></div>
+        <div class="node-time">18:30 - 21:00 ｜ NIGHT</div>
+        <div class="node-card">
+          <div class="card-header">
+            <h3 class="node-title">窗畔微醺 · 衡山路8号洋房法餐 or 滨江水岸烛光</h3>
+            <span class="badge-tag">烛光暖语 · 甜蜜收官</span>
+          </div>
+          <p class="node-desc">
+            入夜后，衡山路的法式红砖与梧桐树被地灯打上温润的金光。挑选一家藏在水塔中庭或洋房内的精致小酒馆。切一份熟成鸭胸或香草烤羊排，碰杯微甜气泡酒，在雨夜低语中结束完美的一天。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 2: Interactive Spot Explorer -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">徐汇五大雨日地标精选</h2>
+      <span class="section-en">FEATURED SPOTS EXPLORER</span>
+    </div>
+
+    <div class="tab-container">
+      <div class="tab-pills" id="tab-pills">
+        <button class="tab-pill active" data-id="zikawei">徐家汇书院 (大教堂对景)</button>
+        <button class="tab-pill" data-id="blackstone">黑石公寓 M+ (黑胶书店)</button>
+        <button class="tab-pill" data-id="gatem">西岸梦中心 (Gate M)</button>
+        <button class="tab-pill" data-id="westbund">西岸美术馆 (蓬皮杜合作展)</button>
+        <button class="tab-pill" data-id="hengshan8">衡山路8号 / 盛捷街区</button>
+      </div>
+
+      <div class="spot-content-panel" id="spot-display">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Part 3: Field Guide -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">徐汇雨日绅士锦囊</h2>
+      <span class="section-en">XUHUI RAINY TIPS</span>
+    </div>
+
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🚇</div>
+        <div class="tip-title">徐家汇地下大枢纽</div>
+        <div class="tip-text">
+          1/9/11号线三线交汇，地下通道直达港汇恒隆、美罗城、徐家汇书院地下出口，雨天零沾湿随意穿梭。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🎧</div>
+        <div class="tip-title">一副降噪耳机的浪漫</div>
+        <div class="tip-text">
+          在黑石公寓或书院咖啡座，主动为她戴上一只耳机，播放一曲德彪西的《月光》或爵士乐，雨声做和弦，氛围瞬间升华。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">📸</div>
+        <div class="tip-title">书院光启之门机位</div>
+        <div class="tip-text">
+          徐家汇书院一楼中央，让女朋友站在光启之门光雕下仰望书架，拍摄纵向大景深全身照，气势恢宏且充满求知知性美。
+        </div>
+      </div>
+
+      <div class="tip-card">
+        <div class="tip-icon">🚗</div>
+        <div class="tip-title">西岸滨江点对点打车</div>
+        <div class="tip-text">
+          从衡复至西岸滨江建议直接打车定在「西岸梦中心地下落客区」或「西岸美术馆正门落客檐」，避免在江边走风雨路。
+        </div>
+      </div>
+    </div>
+
+    <!-- Part 4: Checklist -->
+    <div class="section-title-wrap">
+      <h2 class="section-title">徐汇雨日出发清单</h2>
+      <span class="section-en">PRE-DEPARTURE CHECKLIST</span>
+    </div>
+
+    <div class="checklist-wrap">
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">微信关注「徐家汇书院」小程序，确认节假日免预约入馆规则</span>
+      </div>
+      <div class="checklist-item checked" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">预订西岸美术馆蓬皮杜常设展门票或西岸梦中心江景餐厅卡座</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">备一把质感出众的纯色长柄雨伞（老洋房与江岸拍照绝佳道具）</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">随身携带耳机与湿纸巾，进入室内擦拭雨丝并共享音乐时光</span>
+      </div>
+      <div class="checklist-item" onclick="toggleCheck(this)">
+        <div class="check-custom"></div>
+        <span class="check-label">提前确认衡山路/复兴中路晚市餐厅排队情况（雨天提早入座）</span>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-quote">“大教堂的钟声落在水磨石地面，黑胶慢转着岁月，愿每一次雨落，我们都在彼此身旁。”</p>
+      <p>Autumn Rainy Day Guide · Xuhui, Shanghai</p>
+    </footer>
+  </div>
+
+  <script>
+    const spotData = {
+      zikawei: {
+        name: "徐家汇书院 (Zikawei Library)",
+        vibe: "大教堂对景 · 光启之门巴西利卡 · 挑空三层书香圣殿",
+        desc: "建筑大师戴卫·奇普菲尔德事务所设计，中庭耸立着由3D打印还原的宏大「光启之门」。二楼、三楼拥有巨大的落地玻璃采光面，正对着雨幕中巍峨的徐家汇天主教堂，视野震撼神圣。",
+        photoTip: "站在一楼中庭金光闪耀的巴西利卡拱门前，或在二楼临窗阅读位以窗外细雨中的天主教堂双塔为背景抓拍，知性端庄。",
+        rainTip: "地铁1/9/11号线徐家汇站地下直达，内部恒温干爽，一楼配套精致咖啡厅与文创书店。",
+        booking: "免费开放，节假日高峰建议在「徐家汇书院」微信公众号关注客流公告。"
+      },
+      blackstone: {
+        name: "黑石公寓 M+ (复兴中路)",
+        vibe: "百年音乐折衷主义名宅 · 经典黑胶唱片 · 梧桐掩映",
+        desc: "建于1924年，曾被誉为远东第一豪华公寓。如今一层化身为集黑胶唱片、古典音乐、手冲咖啡、文创于一体的「幸福集荟」。雨水敲打在深黑水磨石墙面上，店内流淌着巴赫大提琴组曲。",
+        photoTip: "公寓入口门廊的四根科林斯爱奥尼巨柱前撑伞合影，或在店内复古拱形黑白键书架廊道拍摄回眸，文艺质感拉满。",
+        rainTip: "复兴中路沿线雨廊较多，黑石公寓内部提供避雨座席与下午茶点心。",
+        booking: "公共空间与书店免费进出，咖啡馆按需消费。"
+      },
+      gatem: {
+        name: "西岸梦中心 (Gate M)",
+        vibe: "百年工业水泥厂活化 · 室内滨水走廊 · 超大艺术街区",
+        desc: "上海滨水新顶流！由亚洲最大水泥厂改建，包含8大室内工业仓体建筑群与连绵室内连廊。直面黄浦江，雨天漫步在巨大的钢结构与红砖挑空中，看江面雨丝游艇，极具大片气场。",
+        photoTip: "沿江大台阶玻璃连廊处，以灰蓝雨雾中的黄浦江江景与对岸楼宇为背景，拍出开阔现代感大片。",
+        rainTip: "雨天无缝衔接！地下停车场超大，建筑群内部全天候天桥连通，汇聚了数十家米其林推荐餐饮与设计师品牌。",
+        booking: "全开放式街区，无需门票。"
+      },
+      westbund: {
+        name: "西岸美术馆 (蓬皮杜中心合作展)",
+        vibe: "三个玉石立方体 · 法国蓬皮杜殿堂展 · 极简大师建筑",
+        desc: "大卫·奇普菲尔德设计，三座半透明玉石质感展厅在雨中呈现出内敛的光泽。长期呈现法国蓬皮杜国家艺术文化中心的馆藏真迹，艺术含金量极高，漫步动线通透轻盈。",
+        photoTip: "展厅中庭巨大的挑空玻璃幕墙前，人物剪影与外部雨水江景重叠，极具现代主义艺术张力。",
+        rainTip: "距离西岸梦中心仅需打车5分钟，地下车库停车便捷，馆内配有高品质江景咖啡轻食区。",
+        booking: "微信搜索「西岸美术馆」小程序购买特展门票。"
+      },
+      hengshan8: {
+        name: "衡山路8号 / 盛捷街区",
+        vibe: "百年美式水塔中庭 · 衡复红砖街区 · 烛光法式小酒馆",
+        desc: "由盛捷大厦与上海锦江建筑群更新而来，中央矗立着标志性的百年红砖水塔。街区环抱在浓密梧桐树下，雨夜落叶铺地，小酒馆烛光融融，是上海最具法式浪漫气质的漫步地之一。",
+        photoTip: "夜晚中庭红砖水塔被暖黄射灯照亮，撑一把长柄伞漫步在鹅卵石水景步道上，宛如置身巴黎街角。",
+        rainTip: "地铁1号线衡山路站出站仅需步行2分钟，街区内多家西餐厅均设宽敞避雨室内卡座。",
+        booking: "街区公共开放，晚餐建议提前在大众点评预订餐厅。"
+      }
+    };
+
+    function renderSpot(id) {
+      const data = spotData[id];
+      const container = document.getElementById('spot-display');
+      container.innerHTML = `
+        <div class="spot-hero-card">
+          <div class="spot-title-row">
+            <h3 class="spot-name">${data.name}</h3>
+            <span class="spot-vibe">${data.vibe}</span>
+          </div>
+          <p class="node-desc" style="margin-bottom: 0;">${data.desc}</p>
+        </div>
+        <div class="spot-grid-info">
+          <div class="info-card">
+            <div class="info-card-title">📸 专属出片机位</div>
+            <p class="info-card-text">${data.photoTip}</p>
+          </div>
+          <div class="info-card">
+            <div class="info-card-title">☔ 避雨与动线优势</div>
+            <p class="info-card-text">${data.rainTip}</p>
+          </div>
+          <div class="info-card" style="grid-column: 1 / -1;">
+            <div class="info-card-title">🎟️ 开放与预约指引</div>
+            <p class="info-card-text">${data.booking}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // Tabs listener
+    const pills = document.querySelectorAll('.tab-pill');
+    pills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        pills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        renderSpot(pill.dataset.id);
+      });
+    });
+
+    renderSpot('zikawei');
+
+    function toggleCheck(el) {
+      el.classList.toggle('checked');
+    }
+
+    // --- Procedural Canvas Rain ---
+    const canvas = document.getElementById('rain-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    const drops = [];
+    const dropCount = 130;
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    for (let i = 0; i < dropCount; i++) {
+      drops.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        length: Math.random() * 20 + 14,
+        speed: Math.random() * 7 + 8,
+        opacity: Math.random() * 0.32 + 0.15,
+        width: Math.random() * 1.2 + 0.6
+      });
+    }
+
+    function animateRain() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = '#c4d7e6';
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < dropCount; i++) {
+        const d = drops[i];
+        ctx.beginPath();
+        ctx.lineWidth = d.width;
+        ctx.globalAlpha = d.opacity;
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x - 1.8, d.y + d.length);
+        ctx.stroke();
+
+        d.y += d.speed;
+        d.x -= 0.6;
+
+        if (d.y > height) {
+          d.y = -d.length;
+          d.x = Math.random() * (width + 100);
+        }
+      }
+      requestAnimationFrame(animateRain);
+    }
+    animateRain();
+
+    // --- Web Audio API Vinyl Gramophone Rain Synthesizer ---
+    let audioCtx = null;
+    let isPlaying = false;
+    let rainGain = null;
+
+    const audioBtn = document.getElementById('toggle-audio-btn');
+    const audioIcon = document.getElementById('audio-icon');
+    const audioLabel = document.getElementById('audio-label');
+
+    function createVinylRainAudio() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufferSize = audioCtx.sampleRate * 2;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        output[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.038;
+        b6 = white * 0.115926;
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      whiteNoise.loop = true;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(700, audioCtx.currentTime);
+
+      rainGain = audioCtx.createGain();
+      rainGain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+
+      whiteNoise.connect(filter);
+      filter.connect(rainGain);
+      rainGain.connect(audioCtx.destination);
+      whiteNoise.start();
+    }
+
+    audioBtn.addEventListener('click', () => {
+      if (!audioCtx) {
+        createVinylRainAudio();
+      }
+      if (!isPlaying) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        rainGain.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.4);
+        isPlaying = true;
+        audioBtn.classList.add('playing');
+        audioIcon.textContent = '🔊';
+        audioLabel.textContent = '静音留声雨声';
+      } else {
+        rainGain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.3);
+        isPlaying = false;
+        audioBtn.classList.remove('playing');
+        audioIcon.textContent = '🌧️';
+        audioLabel.textContent = '开启黑胶留声雨声';
+      }
+    });
+  </script>
+  <script src="player.js"></script>
+</body>
+</html>
